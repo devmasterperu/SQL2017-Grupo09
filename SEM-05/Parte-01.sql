@@ -105,3 +105,50 @@ select idmanzana,count(1) as total,max(montopago)as maxpago,min(montopago) as mi
 from Ficha
 group by idmanzana
 ) rm on m.idmanzana=rm.idmanzana
+
+--5.8
+--Con tabla derivada
+--CI1
+select
+u.nomdepartamento,
+u.nomprovincia,
+u.nomdistrito,
+ru.totpersonas as TOTAL,
+ru.fecnacimientomax,
+DAY(ru.fecnacimientomax) as DIA_NACIMIENTO,
+MONTH(ru.fecnacimientomax) as MES_NACIMIENTO,
+YEAR(ru.fecnacimientomax) as AÑO_NACIMIENTO
+from ubigeo u
+left join
+(
+select idubigeo,count(1) as totpersonas,max(fecnacimiento) as fecnacimientomax
+from Persona
+group by idubigeo
+) ru on u.idubigeo=ru.idubigeo
+--left join
+--(
+--select idubigeo,count(1) as totpersonas,max(fecnacimiento) as fecnacimientomax
+--from Persona
+--group by idubigeo
+--) ru2 on u.idubigeo=ru2.idubigeo
+--Con CTE
+
+WITH CTE_RU
+AS
+(	select idubigeo,count(1) as totpersonas,max(fecnacimiento) as fecnacimientomax
+	from Persona
+	group by idubigeo
+)
+select
+u.nomdepartamento,
+u.nomprovincia,
+u.nomdistrito,
+ru.totpersonas as TOTAL,
+ru.fecnacimientomax,
+DAY(ru.fecnacimientomax) as DIA_NACIMIENTO,
+MONTH(ru.fecnacimientomax) as MES_NACIMIENTO,
+YEAR(ru.fecnacimientomax) as AÑO_NACIMIENTO
+from ubigeo u
+left join CTE_RU ru on u.idubigeo=ru.idubigeo
+--left join CTE_RU ru2 on u.idubigeo=ru2.idubigeo
+select * from CTE_RU
