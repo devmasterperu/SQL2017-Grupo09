@@ -151,4 +151,61 @@ YEAR(ru.fecnacimientomax) as AÑO_NACIMIENTO
 from ubigeo u
 left join CTE_RU ru on u.idubigeo=ru.idubigeo
 --left join CTE_RU ru2 on u.idubigeo=ru2.idubigeo
-select * from CTE_RU
+--select * from CTE_RU
+
+--5.9
+--CON SUBCONSULTAS
+--CE
+select
+m.idmanzana as ID,
+m.nombre as MANZANA,
+(select count(1) from Ficha) as TOTAL_FICHAS,
+--TOTAL_FICHAS_MZA,
+rm.total,
+(select count(1) from Asignacion) as TOTAL_ASIGNA,
+--TOTAL_ASIGNA_MZA
+ra.total
+from Manzana m
+left join
+(
+select idmanzana,count(1) as total from Ficha group by idmanzana
+) rm on m.idmanzana=rm.idmanzana
+left join
+(
+select idmanzana,count(1) as total from Asignacion group by idmanzana
+) ra on m.idmanzana=ra.idmanzana
+
+--CON CTES
+WITH 
+CTE_RM AS
+(
+	select idmanzana,count(1) as total from Ficha group by idmanzana
+),
+CTE_RA AS
+(
+	select idmanzana,count(1) as total from Asignacion group by idmanzana
+)
+select 
+m.idmanzana as ID,
+m.nombre as MANZANA,
+(select count(1) from Ficha) as TOTAL_FICHAS,
+rm.total as TOTAL_FICHAS_MZA,
+(select count(1) from Asignacion) as TOTAL_ASIGNA,
+ra.total AS TOTAL_ASIGNA_MZA
+from Manzana m
+left join CTE_RM rm on m.idmanzana=rm.idmanzana
+left join CTE_RA ra on m.idmanzana=ra.idmanzana
+
+--5.10
+
+select
+f.tipoconsumidor as TIPO,
+CONCAT(p.nombres,' ',p.apellidos) as CLIENTE,
+f.montopago,
+--CI (Obtener el monto de pago promedio)
+(select avg(montopago) from Ficha) as MTOPAGOPROM
+from Ficha f 
+join Cliente c on f.idcliente=c.idcliente
+join Persona p on c.idpersona=p.idpersona
+where f.montopago>(select avg(montopago) from Ficha)--CI
+order by f.montopago desc
