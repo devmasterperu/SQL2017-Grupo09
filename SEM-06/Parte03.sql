@@ -36,6 +36,8 @@ join Persona p on e.idpersona=p.idpersona
 select * from V_REPORTE_E
 
 --6.5
+create function F_R_MANZANA(@idmanzana int) returns table
+return
 select 
 m.nombre as MANZANA,
 f.idficha as IDFICHA,
@@ -46,6 +48,28 @@ DENSE_RANK() OVER(PARTITION BY m.nombre ORDER BY f.numhabitantes ASC) as DRK,--P
 NTILE(4) OVER(PARTITION BY m.nombre ORDER BY f.numhabitantes ASC) as NTILE4--DENTRO DE CADA MANZANA DIVIDIR EN 4 GRUPOS
 from Ficha f
 join Manzana m on f.idmanzana=m.idmanzana
-order by m.nombre,f.numhabitantes ASC
+where f.idmanzana=case when @idmanzana=0 then f.idmanzana else @idmanzana end
+--order by m.nombre,f.numhabitantes ASC
+SELECT * FROM F_R_MANZANA(0)
+SELECT * FROM F_R_MANZANA(1)
+SELECT * FROM F_R_MANZANA(2)
 
+--6.6
+CREATE FUNCTION F_R_TIPOCONSUMIDOR(@tipoconsumidor char(1)) returns table
+as
+return
+select f.tipoconsumidor as TIPO_CONSUMIDOR,
+f.idficha as ID_FICHA,
+f.montopago as MTOPAGO,
+ROW_NUMBER() OVER(PARTITION BY f.tipoconsumidor ORDER BY f.montopago DESC) AS RN,
+RANK() OVER(PARTITION BY f.tipoconsumidor ORDER BY f.montopago DESC) AS RK,
+DENSE_RANK() OVER(PARTITION BY f.tipoconsumidor ORDER BY f.montopago DESC) AS DRK,
+NTILE(5) OVER(PARTITION BY f.tipoconsumidor ORDER BY f.montopago DESC) AS NTILE5,
+NTILE(10) OVER(PARTITION BY f.tipoconsumidor ORDER BY f.montopago DESC) AS NTILE10,
+NTILE(15) OVER(PARTITION BY f.tipoconsumidor ORDER BY f.montopago DESC) AS NTILE15
+from Ficha f
+where f.tipoconsumidor=case when @tipoconsumidor='T' then f.tipoconsumidor else @tipoconsumidor end
+--order by f.tipoconsumidor,f.montopago DESC
+
+select * from F_R_TIPOCONSUMIDOR('G')
 
